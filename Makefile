@@ -17,4 +17,7 @@ sqlc:
 	sqlc generate
 	# docker run --rm -v ${pwd}:/src -w /src sqlc/sqlc generate # on windows
 
+test:
+	go test -v -cover -short ./...
+
 .PHONY: postgres createdb dropdb migrateup migratedown sqlc

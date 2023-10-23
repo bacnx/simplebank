@@ -13,17 +13,20 @@ RETURNING *;
 SELECT * FROM transfers
 WHERE id = $1 LIMIT 1;
 
--- name: GetTransferByFromAccountId :many
+-- name: ListTransfersByFromAccountId :many
 SELECT * FROM transfers
 WHERE from_account_id = $1
+ORDER BY id
 LIMIT $2 OFFSET $3;
 
--- name: GetTransferByToAccountId :many
+-- name: ListTransfersByToAccountId :many
 SELECT * FROM transfers
 WHERE to_account_id = $1
+ORDER BY id
 LIMIT $2 OFFSET $3;
 
--- name: GetTransferByFromToAccountId :many
+-- name: ListTransfers :many
 SELECT * FROM transfers
 WHERE from_account_id = $1 and to_account_id = $2
+ORDER BY id
 LIMIT $3 OFFSET $4;
