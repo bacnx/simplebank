@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/bacnx/simplebank/util"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func createRandomEntry(t *testing.T, accountID int64) Entry {
@@ -15,10 +15,10 @@ func createRandomEntry(t *testing.T, accountID int64) Entry {
 	}
 
 	entry, err := testQueries.CreateEntry(context.Background(), args)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	assert.NotZero(t, entry.ID)
-	assert.Equal(t, entry.AccountID, accountID)
+	require.NotZero(t, entry.ID)
+	require.Equal(t, entry.AccountID, accountID)
 
 	return entry
 }
@@ -43,12 +43,12 @@ func TestGetEntry(t *testing.T) {
 	entries, _ := createRandomEntries(t, 1)
 	entry1 := entries[0]
 	entry2, err := testQueries.GetEntry(context.Background(), entry1.ID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	assert.Equal(t, entry1.ID, entry2.ID)
-	assert.Equal(t, entry1.AccountID, entry2.AccountID)
-	assert.Equal(t, entry1.Amount, entry2.Amount)
-	assert.Equal(t, entry1.CreatedAt, entry2.CreatedAt)
+	require.Equal(t, entry1.ID, entry2.ID)
+	require.Equal(t, entry1.AccountID, entry2.AccountID)
+	require.Equal(t, entry1.Amount, entry2.Amount)
+	require.Equal(t, entry1.CreatedAt, entry2.CreatedAt)
 }
 
 func TestListEntries(t *testing.T) {
@@ -59,8 +59,8 @@ func TestListEntries(t *testing.T) {
 		Offset:    5,
 	}
 	entries, err := testQueries.ListEntries(context.Background(), args)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	assert.Len(t, entries, 5)
-	assert.Equal(t, entries[0].AccountID, accountID)
+	require.Len(t, entries, 5)
+	require.Equal(t, entries[0].AccountID, accountID)
 }
