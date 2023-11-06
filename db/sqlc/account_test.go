@@ -10,11 +10,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomAccount(t *testing.T) Account {
+// When pass argument
+//
+//	first arg is string to custom account.currency
+func createRandomAccount(t *testing.T, arg ...interface{}) Account {
 	args := CreateAccountParams{
 		Owner:    util.RandomOwner(),
 		Balance:  util.RandomMoney(),
 		Currency: util.RandomCurrency(),
+	}
+
+	if len(arg) >= 1 {
+		if currency, ok := arg[0].(string); ok {
+			args.Currency = currency
+		}
 	}
 
 	account, err := testQueries.CreateAccount(context.Background(), args)
