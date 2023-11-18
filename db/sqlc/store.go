@@ -8,7 +8,7 @@ import (
 )
 
 type Store struct {
-	*Queries
+    *Queries
 	db *sql.DB
 }
 
@@ -60,17 +60,22 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		var err error
 
 		var account1, account2 Account
-		account1, err = q.GetAccount(ctx, arg.FromAccountID)
+		account1, err = q.GetAccountForUpdate(ctx, arg.FromAccountID)
 		if err != nil {
 			return err
 		}
-		account2, err = q.GetAccount(ctx, arg.ToAccountID)
+		account2, err = q.GetAccountForUpdate(ctx, arg.ToAccountID)
 		if err != nil {
 			return err
 		}
+
 		if account1.Currency != account2.Currency {
 			return errors.New("The currencies of the two accounts are not same")
 		}
+
+		// if account1.Balance < arg.Amount {
+		// 	return errors.New("From account's balance is not enough")
+		// }
 
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
 			FromAccountID: arg.FromAccountID,
@@ -97,7 +102,15 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 
-		// TODO: update account's balance
+		_, err = q.UpdateAccount(ctx, UpdateAccountParams{
+			ID:      arg.FromAccountID,
+			Balance: account1.Balance - arg.Amount,
+		})
+
+		_, err = q.UpdateAccount(ctx, UpdateAccountParams{
+			ID:      arg.ToAccountID,
+			Balance: account2.Balance + arg.Amount,
+		})
 
 		return nil
 	})
