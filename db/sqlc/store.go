@@ -8,7 +8,7 @@ import (
 )
 
 type Store struct {
-    *Queries
+	*Queries
 	db *sql.DB
 }
 
