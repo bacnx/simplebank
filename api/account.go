@@ -2,7 +2,6 @@ package api
 
 import (
 	"database/sql"
-	"log"
 	"net/http"
 
 	db "github.com/bacnx/simplebank/db/sqlc"
@@ -72,8 +71,6 @@ func (server *Server) listAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
-	log.Println(">> request", req)
 
 	arg := db.ListAccountsParams{
 		Limit:  req.PageSize,

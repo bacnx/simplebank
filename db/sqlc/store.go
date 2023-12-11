@@ -7,19 +7,24 @@ import (
 	"fmt"
 )
 
-type Store struct {
+type Store interface {
+	Querier
+	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
+}
+
+type SQLStore struct {
 	*Queries
 	db *sql.DB
 }
 
-func NewStore(db *sql.DB) *Store {
-	return &Store{
+func NewStore(db *sql.DB) Store {
+	return &SQLStore{
 		db:      db,
 		Queries: New(db),
 	}
 }
 
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -53,7 +58,7 @@ type TransferTxResult struct {
 
 // TransferTx performs a money transfer from one account to the other.
 // It creates a transfer record, add account entries, and update account's balance within a single database transaction
-func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
+func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 
 	err := store.execTx(ctx, func(q *Queries) error {
@@ -71,11 +76,11 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		}
 
 		if account1.Currency != account2.Currency {
-			return errors.New("The currencies of the two accounts are not same")
+			return errors.New("the currencies of the two accounts are not same")
 		}
 
 		// if account1.Balance < arg.Amount {
-		// 	return errors.New("From account's balance is not enough")
+		// 	return errors.New("from account's balance is not enough")
 		// }
 
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
@@ -104,11 +109,9 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		}
 
 		if arg.FromAccountID < arg.ToAccountID {
-			result.FromAccount, result.ToAccount, err =
-				addMoney(ctx, q, arg.FromAccountID, account1.Balance-arg.Amount, arg.ToAccountID, account2.Balance+arg.Amount)
+			result.FromAccount, result.ToAccount, err = addMoney(ctx, q, arg.FromAccountID, account1.Balance-arg.Amount, arg.ToAccountID, account2.Balance+arg.Amount)
 		} else {
-			result.ToAccount, result.FromAccount, err =
-				addMoney(ctx, q, arg.ToAccountID, account2.Balance+arg.Amount, arg.FromAccountID, account1.Balance-arg.Amount)
+			result.ToAccount, result.FromAccount, err = addMoney(ctx, q, arg.ToAccountID, account2.Balance+arg.Amount, arg.FromAccountID, account1.Balance-arg.Amount)
 		}
 		if err != nil {
 			return err
