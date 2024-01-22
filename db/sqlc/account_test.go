@@ -14,8 +14,9 @@ import (
 //
 //	first arg is string to custom account.currency
 func createRandomAccount(t *testing.T, arg ...interface{}) Account {
+	user := createRandomUser(t)
 	args := CreateAccountParams{
-		Owner:    util.RandomOwner(),
+		Owner:    user.Username,
 		Balance:  util.RandomMoney(),
 		Currency: util.RandomCurrency(),
 	}
