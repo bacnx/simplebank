@@ -263,7 +263,7 @@ func TestCreateTransfer(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStub(store)
 
-			server := NewServer(store)
+			server := newTestServer(store)
 			recorder := httptest.NewRecorder()
 
 			body := createTransferRequest{
