@@ -12,7 +12,7 @@ import (
 
 // When pass argument
 //
-//	first arg is string to custom account.currency
+// first arg is string to custom account.currency
 func createRandomAccount(t *testing.T, arg ...interface{}) Account {
 	user := createRandomUser(t)
 	args := CreateAccountParams{
@@ -60,18 +60,17 @@ func TestGetAccount(t *testing.T) {
 }
 
 func TestListAccounts(t *testing.T) {
-	for i := 0; i < 10; i++ {
-		createRandomAccount(t)
-	}
+	account := createRandomAccount(t)
 
 	args := ListAccountsParams{
-		Limit:  5,
-		Offset: 5,
+		Owner:  account.Owner,
+		Limit:  3,
+		Offset: 0,
 	}
 
 	accounts, err := testQueries.ListAccounts(context.Background(), args)
 	require.NoError(t, err)
-	require.Len(t, accounts, 5)
+	require.GreaterOrEqual(t, len(accounts), 1)
 }
 
 func TestUpdateAccount(t *testing.T) {

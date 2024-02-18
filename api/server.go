@@ -1,6 +1,8 @@
 package api
 
 import (
+	"fmt"
+
 	db "github.com/bacnx/simplebank/db/sqlc"
 	"github.com/bacnx/simplebank/token"
 	"github.com/bacnx/simplebank/util"
@@ -18,8 +20,12 @@ type Server struct {
 }
 
 // NewServer creates a new HTTP server and setup routing.
-func NewServer(config util.Config, store db.Store) *Server {
-	tokenMaker := token.NewPasetoMaker()
+func NewServer(config util.Config, store db.Store) (*Server, error) {
+	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create token maker: %w", err)
+	}
+
 	server := &Server{
 		config:     config,
 		store:      store,
@@ -31,7 +37,7 @@ func NewServer(config util.Config, store db.Store) *Server {
 	}
 
 	server.setupRouter()
-	return server
+	return server, nil
 }
 
 func (server *Server) setupRouter() {

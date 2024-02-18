@@ -13,10 +13,13 @@ type PasetoMaker struct {
 }
 
 // NewPasetoMaker creates new PASETO token
-func NewPasetoMaker() Maker {
-	symmetricKey := paseto.NewV4SymmetricKey()
+func NewPasetoMaker(key string) (Maker, error) {
+	symmetricKey, err := paseto.V4SymmetricKeyFromBytes([]byte(key))
+	if err != nil {
+		return nil, err
+	}
 
-	return &PasetoMaker{symmetricKey}
+	return &PasetoMaker{symmetricKey}, nil
 }
 
 // CreateToken creates a new token for specific username and duration

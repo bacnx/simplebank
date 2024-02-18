@@ -10,6 +10,7 @@ import (
 	"github.com/bacnx/simplebank/token"
 	"github.com/bacnx/simplebank/util"
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -17,12 +18,16 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func newTestServer(store db.Store) *Server {
+func newTestServer(t *testing.T, store db.Store) *Server {
 	config := util.Config{
+		TokenSymmetricKey:   util.RandomString(32),
 		AccessTokenDuration: time.Minute,
 	}
 
-	return NewServer(config, store)
+	server, err := NewServer(config, store)
+	require.NoError(t, err)
+
+	return server
 }
 
 func createAndSetAuthHeader(t *testing.T, tokenMaker token.Maker, username string, request *http.Request) {
