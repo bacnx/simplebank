@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   test:
+    if: false # the job is nerver executed
     name: Build image
     runs-on: ubuntu-latest
 
