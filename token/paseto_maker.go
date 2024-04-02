@@ -23,25 +23,25 @@ func NewPasetoMaker(key string) (Maker, error) {
 }
 
 // CreateToken creates a new token for specific username and duration
-func (maker *PasetoMaker) CreateToken(username string, duration time.Duration) (string, error) {
+func (maker *PasetoMaker) CreateToken(username string, duration time.Duration) (string, *Payload, error) {
 	payload, err := NewPayload(username, duration)
 	if err != nil {
-		return "", err
+		return "", payload, err
 	}
 	payloadJson, err := json.Marshal(payload)
 	if err != nil {
-		return "", err
+		return "", payload, err
 	}
 
 	pasetoToken, err := paseto.NewTokenFromClaimsJSON(payloadJson, nil)
 	if err != nil {
-		return "", err
+		return "", payload, err
 	}
 	pasetoToken.SetExpiration(payload.ExpiredAt)
 
 	token := pasetoToken.V4Encrypt(maker.symmetricKey, nil)
 
-	return token, nil
+	return token, payload, nil
 }
 
 // VerifyToken check if token valid or not

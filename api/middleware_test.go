@@ -20,8 +20,9 @@ func setAuthHeader(
 	tokenMaker token.Maker,
 	request *http.Request,
 ) {
-	token, err := tokenMaker.CreateToken(username, duration)
+	token, payload, err := tokenMaker.CreateToken(username, duration)
 	require.NoError(t, err)
+	require.NotEmpty(t, payload)
 
 	authHeader := fmt.Sprintf("%s %s", tokenType, token)
 	request.Header.Set(authorizationPayloadKey, authHeader)
