@@ -9,7 +9,7 @@ A simple back-end project using Golang, PostgreSQL.
 - Docker
 - [sqlc](https://sqlc.dev)
 - [migrate](https://github.com/golang-migrate/migrate) _(for migrate database)_
-- [Paseto](https://paseto.io)
+- [Paseto](https://paseto.io) _(create token for authentication)_
 
 ## Setup local development
 
@@ -69,6 +69,12 @@ make sqlc
 
 ```bash
 make mock
+```
+
+- Create a new db migration:
+
+```bash
+make new_migration name=<migration_name>
 ```
 
 ### How to run
