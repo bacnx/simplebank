@@ -77,6 +77,18 @@ make mock
 make new_migration name=<migration_name>
 ```
 
+- Generate dbdocs from `doc/db.dbml`:
+
+```bash
+make dbdocs
+```
+
+- Generate db schema:
+
+```bash
+make db_schema
+```
+
 ### How to run
 
 - Run server:
