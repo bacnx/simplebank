@@ -40,16 +40,16 @@ func (server *Server) createUser(ctx *gin.Context) {
 	}
 
 	arg := db.CreateUserParams{
-		Username:      req.Username,
-		HasedPassword: hasedPassword,
-		FullName:      req.FullName,
-		Email:         req.Email,
+		Username:       req.Username,
+		HashedPassword: hasedPassword,
+		FullName:       req.FullName,
+		Email:          req.Email,
 	}
 
 	user, err := server.store.CreateUser(ctx, arg)
 	if err != nil {
-		if qpErr, ok := err.(*pq.Error); ok {
-			switch qpErr.Code.Name() {
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code.Name() {
 			case "unique_violation":
 				ctx.JSON(http.StatusForbidden, errorResponse(err))
 				return
@@ -96,7 +96,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	err = util.CheckPassword(req.Password, user.HasedPassword)
+	err = util.CheckPassword(req.Password, user.HashedPassword)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
