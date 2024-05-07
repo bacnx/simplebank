@@ -1,6 +1,6 @@
 -- name: CreateUser :one
 INSERT INTO users (
-  username, hased_password, full_name, email
+  username, hashed_password, full_name, email
 )
 VALUES (
   $1, $2, $3, $4
@@ -23,7 +23,7 @@ LIMIT $1 OFFSET $2;
 
 -- name: UpdateUser :one
 UPDATE users
-SET hased_password = $2, password_changed_at = now()
+SET hashed_password = $2, password_changed_at = now()
 WHERE username = $1
 RETURNING *;
 

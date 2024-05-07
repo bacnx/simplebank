@@ -31,12 +31,12 @@ func (e eqCreateUserParamsMatcher) Matches(x any) bool {
 		return false
 	}
 
-	err := util.CheckPassword(e.password, arg.HasedPassword)
+	err := util.CheckPassword(e.password, arg.HashedPassword)
 	if err != nil {
 		return false
 	}
 
-	e.arg.HasedPassword = arg.HasedPassword
+	e.arg.HashedPassword = arg.HashedPassword
 	return reflect.DeepEqual(e.arg, x)
 }
 
@@ -312,14 +312,14 @@ func TestLoginUserAPI(t *testing.T) {
 
 func randomUser(t *testing.T) (db.User, string) {
 	password := util.RandomString(6)
-	hasedPassword, err := util.HashPassword(password)
+	hashedPassword, err := util.HashPassword(password)
 	require.NoError(t, err)
 
 	user := db.User{
-		Username:      util.RandomString(6),
-		HasedPassword: hasedPassword,
-		FullName:      util.RandomString(6),
-		Email:         util.RandomEmail(),
+		Username:       util.RandomString(6),
+		HashedPassword: hashedPassword,
+		FullName:       util.RandomString(6),
+		Email:          util.RandomEmail(),
 	}
 
 	return user, password
