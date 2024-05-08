@@ -71,26 +71,37 @@ func runRrpcGatewayServer(config util.Config, store db.Store) {
 		log.Fatal("cannot create gapi server:", err)
 	}
 
+	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+		MarshalOptions: protojson.MarshalOptions{
+			UseProtoNames: true,
+		},
+		UnmarshalOptions: protojson.UnmarshalOptions{
+			DiscardUnknown: true,
+		},
+	})
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	mux := runtime.NewServeMux(
-		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
-			MarshalOptions: protojson.MarshalOptions{
-				UseProtoNames: true,
-			},
-			UnmarshalOptions: protojson.UnmarshalOptions{
-				DiscardUnknown: true,
-			},
-		}),
-	)
-	err = pb.RegisterSimplebankHandlerServer(ctx, mux, server)
+	grpcMux := runtime.NewServeMux(jsonOption)
+	err = pb.RegisterSimplebankHandlerServer(ctx, grpcMux, server)
 	if err != nil {
-		log.Fatal("cannot register handler:", err)
+		log.Fatal("cannot register handler server:", err)
 	}
 
-	log.Printf("start gRPC-Gateway server at %s", config.HTTPServerAddress)
-	err = http.ListenAndServe(config.HTTPServerAddress, mux)
+	mux := http.NewServeMux()
+	mux.Handle("/", grpcMux)
+
+	fs := http.FileServer(http.Dir("./doc/swagger"))
+	mux.Handle("/swagger/", http.StripPrefix("/swagger/", fs))
+
+	listener, err := net.Listen("tcp", config.HTTPServerAddress)
+	if err != nil {
+		log.Fatal("cannot create listener:", err)
+	}
+
+	log.Printf("start gRPC-Gateway server at %s", listener.Addr().String())
+	err = http.Serve(listener, mux)
 	if err != nil {
 		log.Fatal("cannot start gRPC-Gateway server:", err)
 	}
