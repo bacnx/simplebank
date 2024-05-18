@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "A Bit of Everything",
+    "title": "Simple Bank",
     "version": "1.0",
     "contact": {
       "name": "SimpleBank",
