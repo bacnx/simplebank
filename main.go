@@ -13,6 +13,9 @@ import (
 	"github.com/bacnx/simplebank/gapi"
 	"github.com/bacnx/simplebank/pb"
 	"github.com/bacnx/simplebank/util"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	_ "github.com/lib/pq"
 	"github.com/rakyll/statik/fs"
@@ -26,14 +29,28 @@ func main() {
 	if err != nil {
 		log.Fatal("cannot load config:", err)
 	}
+
 	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
-	store := db.NewStore(conn)
 
+	runDBMigration(config.MigrationUrl, config.DBSource)
+
+	store := db.NewStore(conn)
 	go runRrpcGatewayServer(config, store)
 	runGrpcServer(config, store)
+}
+
+func runDBMigration(migrationUrl, dbSource string) {
+	m, err := migrate.New(migrationUrl, dbSource)
+	if err != nil {
+		log.Fatal("cannot create migrate instance:", err)
+	}
+
+	if err = m.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatal("cannot run migrate up:", err)
+	}
 }
 
 func runGinServer(config util.Config, store db.Store) {
