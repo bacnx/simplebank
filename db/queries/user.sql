@@ -23,8 +23,13 @@ LIMIT $1 OFFSET $2;
 
 -- name: UpdateUser :one
 UPDATE users
-SET hashed_password = $2, password_changed_at = now()
-WHERE username = $1
+SET
+  hashed_password = COALESCE(sqlc.narg(hashed_password), hashed_password),
+  full_name = COALESCE(sqlc.narg(full_name), full_name),
+  password_changed_at = CASE WHEN sqlc.narg(hashed_password) IS NOT NULL
+    THEN now() ELSE password_changed_at
+    END
+WHERE username = sqlc.arg(username)
 RETURNING *;
 
 -- name: DeleteUser :one

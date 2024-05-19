@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -147,18 +148,24 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
-SET hashed_password = $2, password_changed_at = now()
-WHERE username = $1
+SET
+  hashed_password = COALESCE($1, hashed_password),
+  full_name = COALESCE($2, full_name),
+  password_changed_at = CASE WHEN $1 IS NOT NULL
+    THEN now() ELSE password_changed_at
+    END
+WHERE username = $3
 RETURNING username, hashed_password, full_name, email, password_changed_at, created_at
 `
 
 type UpdateUserParams struct {
-	Username       string `json:"username"`
-	HashedPassword string `json:"hashed_password"`
+	HashedPassword sql.NullString `json:"hashed_password"`
+	FullName       sql.NullString `json:"full_name"`
+	Username       string         `json:"username"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUser, arg.Username, arg.HashedPassword)
+	row := q.db.QueryRowContext(ctx, updateUser, arg.HashedPassword, arg.FullName, arg.Username)
 	var i User
 	err := row.Scan(
 		&i.Username,
