@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "Simple Bank",
-    "version": "1.0",
+    "version": "1.1",
     "contact": {
       "name": "SimpleBank",
       "url": "https://github.com/bacnx/simplebank",
@@ -84,6 +84,38 @@
           "simplebank"
         ]
       }
+    },
+    "/v1/update_user": {
+      "post": {
+        "operationId": "simplebank_UpdateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbUpdateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbUpdateUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "simplebank"
+        ]
+      }
     }
   },
   "definitions": {
@@ -140,6 +172,28 @@
           "type": "string",
           "format": "date-time"
         },
+        "user": {
+          "$ref": "#/definitions/pbUser"
+        }
+      }
+    },
+    "pbUpdateUserRequest": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "fullName": {
+          "type": "string"
+        }
+      }
+    },
+    "pbUpdateUserResponse": {
+      "type": "object",
+      "properties": {
         "user": {
           "$ref": "#/definitions/pbUser"
         }
