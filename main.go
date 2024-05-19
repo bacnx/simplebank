@@ -123,9 +123,9 @@ func runRrpcGatewayServer(config util.Config, store db.Store) {
 		log.Fatal("cannot create listener:", err)
 	}
 
-	log.Printf("start gRPC-Gateway server at %s", listener.Addr().String())
+	log.Printf("start http server at %s", listener.Addr().String())
 	err = http.Serve(listener, mux)
 	if err != nil {
-		log.Fatal("cannot start gRPC-Gateway server:", err)
+		log.Fatal("cannot start http server:", err)
 	}
 }
