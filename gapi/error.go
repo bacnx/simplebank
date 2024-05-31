@@ -13,7 +13,7 @@ func fieldViolation(field string, err error) *errdetails.BadRequest_FieldViolati
 	}
 }
 
-func invalidArgumentError(violations []*errdetails.BadRequest_FieldViolation) error {
+func violationsError(violations []*errdetails.BadRequest_FieldViolation) error {
 	badRequest := &errdetails.BadRequest{FieldViolations: violations}
 	statusInvalid := status.New(codes.InvalidArgument, "invalid parameters")
 
@@ -22,4 +22,8 @@ func invalidArgumentError(violations []*errdetails.BadRequest_FieldViolation) er
 		return statusInvalid.Err()
 	}
 	return statusDetails.Err()
+}
+
+func unautheticatedError(err error) error {
+	return status.Errorf(codes.Unauthenticated, "unauthenticated: %s", err)
 }
