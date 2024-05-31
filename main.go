@@ -75,7 +75,7 @@ func runGrpcServer(config util.Config, store db.Store) {
 		log.Err(err).Msg("cannot create server")
 	}
 
-	serverOption := grpc.ChainUnaryInterceptor(gapi.Logger)
+	serverOption := grpc.ChainUnaryInterceptor(gapi.GrpcLogger)
 
 	grpcServer := grpc.NewServer(serverOption)
 	pb.RegisterSimplebankServer(grpcServer, server)
@@ -118,7 +118,8 @@ func runRrpcGatewayServer(config util.Config, store db.Store) {
 	}
 
 	mux := http.NewServeMux()
-	mux.Handle("/", grpcMux)
+	handler := gapi.HttpLogger(grpcMux)
+	mux.Handle("/", handler)
 
 	statikFS, err := fs.New()
 	if err != nil {
