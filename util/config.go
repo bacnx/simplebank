@@ -17,6 +17,7 @@ type Config struct {
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMYTRIC_KEY"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
+	RedisAddress         string        `mapstructure:"REDIS_ADDRESS"`
 }
 
 // GetConfig get configs from app.env in path or from environemnt variables.
