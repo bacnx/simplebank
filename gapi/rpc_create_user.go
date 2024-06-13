@@ -2,6 +2,7 @@ package gapi
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	db "github.com/bacnx/simplebank/db/sqlc"
@@ -27,14 +28,32 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		return nil, status.Errorf(codes.Internal, "failed to hash password: %s", err.Error())
 	}
 
-	arg := db.CreateUserParams{
-		Username:       req.GetUsername(),
-		HashedPassword: hashedPassword,
-		FullName:       req.GetFullName(),
-		Email:          req.GetEmail(),
+	arg := db.CreateUserTxParams{
+		CreateUserParams: db.CreateUserParams{
+			Username:       req.GetUsername(),
+			HashedPassword: hashedPassword,
+			FullName:       req.GetFullName(),
+			Email:          req.GetEmail(),
+		},
+		AfterCreate: func(user db.User) error {
+			taskPayload := &worker.PayloadSendVerifyEmail{
+				Username: user.Username,
+			}
+			opts := []asynq.Option{
+				asynq.MaxRetry(10),
+				asynq.ProcessIn(10 * time.Second),
+				asynq.Queue(worker.QueueCretical),
+			}
+			err = server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
+			if err != nil {
+				return fmt.Errorf("failed to distribute task to send verify email: %w", err)
+			}
+
+			return nil
+		},
 	}
 
-	user, err := server.store.CreateUser(ctx, arg)
+	resultTx, err := server.store.CreateUserTx(ctx, arg)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			switch pqErr.Code.Name() {
@@ -45,22 +64,8 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		return nil, status.Errorf(codes.Internal, "failed to create user: %s", err.Error())
 	}
 
-	// TODO: use db transaction
-	taskPayload := &worker.PayloadSendVerifyEmail{
-		Username: user.Username,
-	}
-	opts := []asynq.Option{
-		asynq.MaxRetry(10),
-		asynq.ProcessIn(10 * time.Second),
-		asynq.Queue(worker.QueueCretical),
-	}
-	err = server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to distribute task to send verify email: %s", err)
-	}
-
 	return &pb.CreateUserResponse{
-		User: convertUser(user),
+		User: convertUser(resultTx.User),
 	}, nil
 }
 
