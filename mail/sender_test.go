@@ -8,6 +8,10 @@ import (
 )
 
 func TestSendMailWithGmail(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
+
 	config, err := util.GetConfig("..")
 	require.NoError(t, err)
 
