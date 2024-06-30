@@ -14,12 +14,12 @@ const (
 
 type Sender interface {
 	SendEmail(
-		ToEmailAdress []string,
-		Subject string,
-		Content string, // HTML format
-		Cc []string,
-		Bcc []string,
-		AttachFiles []string,
+		toEmailAdress []string,
+		subject string,
+		content string, // HTML format
+		cc []string,
+		bcc []string,
+		attachFiles []string,
 	) error
 }
 
